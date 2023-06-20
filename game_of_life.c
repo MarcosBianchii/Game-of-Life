@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <ncurses.h>
 #include <ctype.h>
+#include <string.h>
 #include <time.h>
 
 uint64_t N;
@@ -30,26 +31,31 @@ bool check_cell(bool m[N][M], int64_t i, int64_t j) {
     return m[i][j] ? (n == 2 || n == 3) : (n == 3);
 }
 
-void print_matrix(bool m[N][M]) {
-    for (uint64_t i = 0; i < N; i++)
+void print_matrix(bool n[N][M]) {
+    char buf[M+1]; buf[M] = '\0';
+    for (uint64_t i = 0; i < N; i++) {
         for (uint64_t j = 0; j < M; j++)
-            mvaddch(i, j, m[i][j] ? '#' : ' ');
+            buf[j] = n[i][j] ? '#' : ' ';
+        mvprintw(i, 0, buf);
+    }
+
     refresh();
 }
 
-void game(bool m[N][M]) {
+void game(bool n[N][M], bool m[N][M]) {
     for (int64_t i = 0; i < N; i++)
         for (int64_t j = 0; j < M; j++)
-            m[i][j] = check_cell(m, i, j);
-    print_matrix(m);
+            n[i][j] = check_cell(m, i, j);
+    memcpy(m, n, sizeof(bool)*N*M);
+    print_matrix(n);
 }
 
-void init(bool m[N][M]) {
+void init(bool n[N][M], bool m[N][M]) {
     attron(COLOR_PAIR(rand() % 8));
-    
     for (int64_t i = 0; i < N; i++)
         for (int64_t j = 0; j < M; j++)
-            m[i][j] = M/N < N/(rand() % 20*M + 1);
+            n[i][j] = M/N < N/(rand() % 10*M + 1);
+    memcpy(m, n, sizeof(bool)*N*M);
 }
 
 void colors_init() {
@@ -71,7 +77,7 @@ void curses_init() {
     cbreak();
     noecho();
     curs_set(0);
-    timeout(55);
+    timeout(60);
     notimeout(stdscr, true);
     colors_init();
     getmaxyx(stdscr, N, M);
@@ -81,10 +87,11 @@ int main() {
     srand(time(NULL));
     curses_init();
     bool m[N][M];
-    init(m);
+    bool n[N][M];
+    init(n, m);
 
     int c = 0;
-    do (c = tolower(getch())) == 'r' ? init(m) : game(m);
+    do (c = tolower(getch())) == 'r' ? init(n, m) : game(n, m);
     while (c != 'q');
 
     endwin();
