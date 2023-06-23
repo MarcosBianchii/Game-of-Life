@@ -17,10 +17,8 @@ uint8_t n_neighbours(bool m[N][M], int64_t x, int64_t y) {
             if (i < 0 || j < 0 || i >= N || j >= M)
                 continue;
             
-            switch (sum) {
-                case 4: return 4;
-                default: sum += i == x && j == y ? 0 : m[i][j];
-            }
+            if (sum == 4) return 4;
+            sum += i == x && j == y ? 0 : m[i][j];
         }
     
     return sum;
@@ -51,10 +49,10 @@ void game(bool n[N][M], bool m[N][M]) {
 }
 
 void init(bool n[N][M], bool m[N][M]) {
-    attron(COLOR_PAIR(rand() % 8));
+    attron(COLOR_PAIR(rand() % 7 + 1));
     for (int64_t i = 0; i < N; i++)
         for (int64_t j = 0; j < M; j++)
-            n[i][j] = M/N < N/(rand() % 10*M + 1);
+            n[i][j] = M < N*N/(rand() % 10*M + 1);
     memcpy(m, n, sizeof(bool)*N*M);
 }
 
@@ -62,7 +60,6 @@ void colors_init() {
     start_color();
     attron(A_BOLD);
     use_default_colors();
-    init_pair(0, COLOR_BLACK,   -1);
     init_pair(1, COLOR_RED,     -1);
     init_pair(2, COLOR_GREEN,   -1);
     init_pair(3, COLOR_YELLOW,  -1);
@@ -78,7 +75,6 @@ void curses_init() {
     noecho();
     curs_set(0);
     timeout(60);
-    notimeout(stdscr, true);
     colors_init();
     getmaxyx(stdscr, N, M);
 }
@@ -86,8 +82,8 @@ void curses_init() {
 int main() {
     srand(time(NULL));
     curses_init();
-    bool m[N][M];
     bool n[N][M];
+    bool m[N][M];
     init(n, m);
 
     int c = 0;
