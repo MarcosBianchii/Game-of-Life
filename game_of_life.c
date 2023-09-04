@@ -12,14 +12,15 @@ uint64_t M;
 
 uint8_t n_neighbours(bool m[N][M], int64_t x, int64_t y) {
     uint8_t sum = 0;
-    for (int64_t i = x-1; i < x+2; i++)
+    for (int64_t i = x-1; i < x+2; i++) {
+        register int64_t row = i % N;
         for (int64_t j = y-1; j < y+2; j++) {
-            if (i < 0 || j < 0 || i >= N || j >= M)
-                continue;
-            
+            int64_t col = j % M;
+
+            sum += row == x && col == y ? 0 : m[row][col];
             if (sum == 4) return 4;
-            sum += i == x && j == y ? 0 : m[i][j];
         }
+    }
     
     return sum;
 }
