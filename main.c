@@ -1,12 +1,12 @@
+#include <ctype.h>
+#include <locale.h>
+#include <ncursesw/ncurses.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <ncursesw/ncurses.h>
-#include <ctype.h>
 #include <string.h>
 #include <time.h>
-#include <locale.h>
 
 #define INIT_ALIVE_CHANCE 12
 
@@ -19,16 +19,22 @@ int *table[2][2] = {
 };
 
 uint8_t n_neighbours(bool m[N][M], int64_t x, int64_t y) {
+    register int64_t row;
+    register int64_t col;
     register uint8_t sum = 0;
-    int64_t row;
 
-    for (int64_t i = x-1; i < x + 2; i++) {
-        row = i % N;
-        for (int64_t j = y-1; j < y + 2; j++) {
-            int64_t col = j % M;
+    for (int64_t i = 0; i < 3; i++) {
+        row = (x + i - 1) % N;
+        for (int64_t j = 0; j < 3; j++) {
+            col = (y + j - 1) % M;
 
-            sum += row == x && col == y ? 0 : m[row][col];
-            if (sum == 4) return 4;
+            if (row == x && col == y) {
+                continue;
+            }
+
+            if ((sum += m[row][col]) == 4) {
+                return 4;
+            }
         }
     }
     
@@ -37,7 +43,7 @@ uint8_t n_neighbours(bool m[N][M], int64_t x, int64_t y) {
 
 bool check_cell(bool m[N][M], int64_t i, int64_t j) {
     uint8_t n = n_neighbours(m, i, j);
-    return m[i][j] ? (n == 2 || n == 3) : (n == 3);
+    return (m[i][j] ? n == 2 : false) || n == 3;
 }
 
 void print_matrix(bool n[N][M]) {
@@ -66,10 +72,8 @@ void game(bool n[N][M], bool m[N][M]) {
 }
 
 void init(bool n[N][M], bool m[N][M]) {
-    // Set random color to cells.
     attron(COLOR_PAIR(rand() % 7 + 1));
 
-    // Toggle to alive at random.
     for (uint32_t i = 0; i < N; i++) {
         for (uint32_t j = 0; j < M; j++) {
             n[i][j] = (rand() % 100) < INIT_ALIVE_CHANCE;
