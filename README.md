@@ -6,3 +6,7 @@ An implementation of [Conway's Game of Life](https://en.wikipedia.org/wiki/Conwa
 ## Controls
 * `Q` to quit
 * `R` to restart
+* `W` to speed up
+* `S` to slow down
+* `D` to set the default speed
+* ` ` to pause/unpause

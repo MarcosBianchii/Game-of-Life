@@ -7,6 +7,7 @@
 #include <string.h>
 #include <time.h>
 
+#define TIMEOUT_INC 10
 #define INIT_ALIVE_CHANCE 12
 #define TIMEOUT 70
 
@@ -111,6 +112,7 @@ colors_init()
     init_pair(5, COLOR_MAGENTA, -1);
     init_pair(6, COLOR_CYAN,    -1);
     init_pair(7, COLOR_WHITE,   -1);
+    
 }
 
 
@@ -123,6 +125,8 @@ curses_init()
     curs_set(0);
     timeout(TIMEOUT);
     colors_init();
+    keypad(stdscr, true);
+    mousemask(BUTTON1_PRESSED, NULL);
     getmaxyx(stdscr, N, M);
     N *= 2;
 }
@@ -143,6 +147,21 @@ init(bool n[N][M], bool m[N][M])
 }
 
 
+static inline int
+input()
+{
+    return tolower(getch());
+}
+
+
+static inline void
+inc_timeout(int *timeout, int inc)
+{
+    *timeout += inc;
+    timeout(*timeout);
+}
+
+
 int
 main()
 {
@@ -154,11 +173,50 @@ main()
     bool m[SIZE][SIZE];
     init(n, m);
 
-    int c = 0;
-    while ((c = tolower(getch())) != 'q') {
-        c == 'r' ? init(n, m) : game(n, m);
-    }
+    int curr_timeout = TIMEOUT;
+    for (;;) switch (input()) {
+        case 'q':
+            endwin();
+            return 0;
+        
+        case 'r':
+            init(n, m);
+            break;
 
-    endwin();
-    return 0;
+        case ' ':
+            timeout(-1);
+            for (;;) switch (input()) {
+                case ' ':
+                    timeout(curr_timeout);
+                    goto unpause;
+
+                case 'q':
+                    endwin();
+                    return 0;
+            }
+
+            unpause:
+            break;
+
+        case 'w': if (curr_timeout > TIMEOUT_INC) {
+            inc_timeout(&curr_timeout, -TIMEOUT_INC);
+            mvprintw(0, 0, "curr_timeout: %i", curr_timeout);
+        } break;
+
+        case 's': if (curr_timeout < 100) {
+            inc_timeout(&curr_timeout, TIMEOUT_INC);
+            mvprintw(0, 0, "curr_timeout: %i", curr_timeout);
+        } break;
+
+        case 'd':
+            curr_timeout = TIMEOUT;
+            break;
+
+        case KEY_RESIZE:
+            getmaxyx(stdscr, N, M);
+            N *= 2;
+            break;
+        
+        default: game(n, m);
+    }
 }
