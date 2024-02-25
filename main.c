@@ -92,10 +92,6 @@ game(bool n[N][M], bool m[N][M])
 
     memcpy(m, n, N * M * sizeof(bool));
     print_matrix(n);
-
-    // Update for resizes.
-    getmaxyx(stdscr, N, M);
-    N *= 2;
 }
 
 
