@@ -196,16 +196,15 @@ main()
 
         case 'w': if (curr_timeout > TIMEOUT_INC) {
             inc_timeout(&curr_timeout, -TIMEOUT_INC);
-            mvprintw(0, 0, "curr_timeout: %i", curr_timeout);
         } break;
 
         case 's': if (curr_timeout < 100) {
             inc_timeout(&curr_timeout, TIMEOUT_INC);
-            mvprintw(0, 0, "curr_timeout: %i", curr_timeout);
         } break;
 
         case 'd':
             curr_timeout = TIMEOUT;
+            timeout(TIMEOUT);
             break;
 
         case KEY_RESIZE:
